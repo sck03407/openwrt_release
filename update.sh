@@ -3,6 +3,9 @@
 set -e
 set -o errexit
 set -o errtrace
+# 添加变量读取ZN_M2
+DEVICE=$(grep "CONFIG_TARGET_DEVICE_qualcommax_ipq60xx_DEVICE_zn_m2" "$BASE_PATH/deconfig/zn_m2_immwrt.config" | grep -o "=y")
+WIFI_ENABLED=$(grep "CONFIG_PACKAGE_kmod-ath11k" "$BASE_PATH/deconfig/zn_m2_immwrt.config" | grep -o "=y" || echo "=n")
 
 # 定义错误处理函数
 error_handler() {
@@ -670,16 +673,19 @@ main() {
     change_dnsmasq2full
     chk_fullconenat
     fix_mk_def_depends
-    add_wifi_default_set
+    # fix_mkpkg_format_invalid    
+    # 仅当设备不是 zn_m2 或 Wi-Fi 未禁用时执行 Wi-Fi 相关操作
+    if [ "$DEVICE" != "=y" ] || [ "$WIFI_ENABLED" = "=y" ]; then
+        update_ath11k_fw
+        add_wifi_default_set
+        add_ax6600_led
+    fi
     update_default_lan_addr
     remove_something_nss_kmod
     update_affinity_script
     fix_build_for_openssl
-    update_ath11k_fw
-    # fix_mkpkg_format_invalid
-    chanage_cpuusage
+    # 其他函数保持不变
     update_tcping
-    add_ax6600_led
     set_custom_task
     update_pw_ha_chk
     install_opkg_distfeeds
@@ -690,7 +696,7 @@ main() {
     update_menu_location
     fix_compile_coremark
     update_dnsmasq_conf
-    # update_lucky
+    # update_lucky    
     add_backup_info_to_sysupgrade
     optimize_smartDNS
     update_mosdns_deconfig
