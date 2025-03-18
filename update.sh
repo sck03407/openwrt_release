@@ -352,7 +352,7 @@ update_tcping() {
         curl -L -o "$tcping_path" https://raw.githubusercontent.com/xiaorouji/openwrt-passwall-packages/refs/heads/main/tcping/Makefile
     fi
 }
-
+# 添加自定义启动任务
 set_custom_task() {
     local sh_dir="$BUILD_DIR/package/base-files/files/etc/init.d"
     cat <<'EOF' >"$sh_dir/custom_task"
@@ -385,7 +385,7 @@ boot() {
 EOF
     chmod +x "$sh_dir/custom_task"
 }
-
+# 修改 luci-app-passwall 的 HAProxy 和 SmartDNS 配置
 update_pw_ha_chk() {
     local new_path="$BASE_PATH/patches/haproxy_check.sh"
     local pw_share_dir="$BUILD_DIR/feeds/small8/luci-app-passwall/root/usr/share/passwall"
@@ -406,7 +406,7 @@ update_pw_ha_chk() {
     sed -i '/msedge/d' "$rules_dir/chnlist"
     sed -i '/github/d' "$rules_dir/chnlist"
 }
-
+# 添加默认 OPKG 软件源
 install_opkg_distfeeds() {
     local emortal_def_dir="$BUILD_DIR/package/emortal/default-settings"
     local distfeeds_conf="$emortal_def_dir/files/99-distfeeds.conf"
@@ -429,7 +429,7 @@ EOF
 sed -ri \'/check_signature/s@^[^#]@#&@\' /etc/opkg.conf\n" $emortal_def_dir/files/99-default-settings
     fi
 }
-
+# 优化 NSS PBUF 性能设置
 update_nss_pbuf_performance() {
     local pbuf_path="$BUILD_DIR/package/kernel/mac80211/files/pbuf.uci"
     if [ -d "$(dirname "$pbuf_path")" ] && [ -f $pbuf_path ]; then
@@ -437,14 +437,14 @@ update_nss_pbuf_performance() {
         sed -i "s/scaling_governor 'performance'/scaling_governor 'schedutil'/g" $pbuf_path
     fi
 }
-
+# 在系统信息中添加构建签名
 set_build_signature() {
     local file="$BUILD_DIR/feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js"
     if [ -d "$(dirname "$file")" ] && [ -f $file ]; then
         sed -i "s/(\(luciversion || ''\))/(\1) + (' \/ build by ZqinKing')/g" "$file"
     fi
 }
-
+# 为 vlmcsd 添加编译补丁
 fix_compile_vlmcsd() {
     local dir="$BUILD_DIR/feeds/packages/net/vlmcsd"
     local patch_src="$BASE_PATH/patches/001-fix_compile_with_ccache.patch"
@@ -455,7 +455,7 @@ fix_compile_vlmcsd() {
         cp -f "$patch_src" "$patch_dest"
     fi
 }
-
+# 更新 NSS 诊断脚本
 update_nss_diag() {
     local file="$BUILD_DIR/package/kernel/mac80211/files/nss_diag.sh"
     if [ -d "$(dirname "$file")" ] && [ -f "$file" ]; then
@@ -463,7 +463,7 @@ update_nss_diag() {
         install -Dm755 "$BASE_PATH/patches/nss_diag.sh" "$file"
     fi
 }
-
+# 调整 samba4 和 tailscale 的菜单位置
 update_menu_location() {
     local samba4_path="$BUILD_DIR/feeds/luci/applications/luci-app-samba4/root/usr/share/luci/menu.d/luci-app-samba4.json"
     if [ -d "$(dirname "$samba4_path")" ] && [ -f "$samba4_path" ]; then
@@ -475,14 +475,14 @@ update_menu_location() {
         sed -i 's/services/vpn/g' "$tailscale_path"
     fi
 }
-
+# 修复 coremark 的编译问题
 fix_compile_coremark() {
     local file="$BUILD_DIR/feeds/packages/utils/coremark/Makefile"
     if [ -d "$(dirname "$file")" ] && [ -f "$file" ]; then
         sed -i 's/mkdir \$/mkdir -p \$/g' "$file"
     fi
 }
-
+# 更新 luci-app-homeproxy 到最新版本
 update_homeproxy() {
     local repo_url="https://github.com/immortalwrt/homeproxy.git"
     local target_dir="$BUILD_DIR/feeds/small8/luci-app-homeproxy"
@@ -492,7 +492,7 @@ update_homeproxy() {
         git clone "$repo_url" "$target_dir"
     fi
 }
-
+# 修改 dnsmasq 的 DHCP 配置
 update_dnsmasq_conf() {
     local file="$BUILD_DIR/package/network/services/dnsmasq/files/dhcp.conf"
     if [ -d "$(dirname "$file")" ] && [ -f "$file" ]; then
@@ -575,7 +575,7 @@ function update_script_priority() {
         sed -i 's/START=.*/START=94/g' "$mosdns_path"
     fi
 }
-
+# 优化 SmartDNS 配置
 function optimize_smartDNS() {
     local smartdns_custom="$BUILD_DIR/feeds/small8/smartdns/conf/custom.conf"
     local smartdns_patch="$BUILD_DIR/feeds/small8/smartdns/patches/010_change_start_order.patch"
@@ -599,7 +599,7 @@ server 223.5.5.5 -bootstrap-dns
 EOF
     fi
 }
-
+# 修改 MosDNS 默认配置
 update_mosdns_deconfig() {
     local mosdns_conf="$BUILD_DIR/feeds/small8/luci-app-mosdns/root/etc/config/mosdns"
     if [ -d "${mosdns_conf%/*}" ] && [ -f "$mosdns_conf" ]; then
@@ -607,7 +607,7 @@ update_mosdns_deconfig() {
         sed -i 's/5335/5336/g' "$mosdns_conf"
     fi
 }
-
+# 修复 luci-app-quickstart 的前端脚本
 fix_quickstart() {
     local qs_index_path="$BUILD_DIR/feeds/small8/luci-app-quickstart/htdocs/luci-static/quickstart/index.js"
     local fix_path="$BASE_PATH/patches/quickstart_index.js"
@@ -617,7 +617,7 @@ fix_quickstart() {
         echo "Quickstart index.js 或补丁文件不存在，请检查路径是否正确。"
     fi
 }
-
+# 调整 open-app-filter 的配置并添加禁用脚本
 update_oaf_deconfig() {
     local conf_path="$BUILD_DIR/feeds/small8/open-app-filter/files/appfilter.config"
     local uci_def="$BUILD_DIR/feeds/small8/luci-app-oaf/root/etc/uci-defaults/94_feature_3.0"
@@ -645,7 +645,7 @@ EOF
         chmod +x "$disable_path"
     fi
 }
-
+# 更新 AdGuardHome 的启动脚本以支持 Firewall4
 support_fw4_adg() {
     local src_path="$BASE_PATH/patches/AdGuardHome"
     local dst_path="$BUILD_DIR/package/feeds/small8/luci-app-adguardhome/root/etc/init.d/AdGuardHome"
